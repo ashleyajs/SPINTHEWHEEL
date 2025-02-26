@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spin Wheel</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f4f4f4;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin-bottom: 30px;
+        }
+
+        .wheel {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+            transition: transform 3s cubic-bezier(0.17, 0.67, 0.21, 0.99);
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            border: 5px solid #333;
+        }
+
+        .center-circle {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: #fff;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            border: 3px solid #333;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid red;
+            z-index: 10;
+        }
+
+        button {
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .winner-display {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 1s ease-in-out, transform 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <h1>Spin to Win!</h1>
+    <div class="wheel-container">
+        <div class="wheel" id="wheel"></div>
+        <div class="center-circle"></div>
+        <div class="pointer"></div>
+    </div>
+    <button id="spin-button">SPIN</button>
+    <div class="winner-display" id="winner-display"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const segments = [
+                { label: "Acres Challenge", color: "#2C3E50" },
+                { label: "Club Challenge", color: "#3498DB" },
+                { label: "Acres Challenge", color: "#2ECC71" },
+                { label: "Club Challenge", color: "#E67E22" },
+                { label: "Acres Challenge", color: "#1ABC9C" },
+                { label: "Club Challenge", color: "#9B59B6" }
+            ];
+            
+            const wheel = document.getElementById('wheel');
+            const spinButton = document.getElementById('spin-button');
+            const winnerDisplay = document.getElementById('winner-display');
+            const segmentAngle = 360 / segments.length;
+            let currentRotation = 0;
+
+            segments.forEach((segment, index) => {
+                const segmentEl = document.createElement('div');
+                segmentEl.style.backgroundColor = segment.color;
+                segmentEl.style.clipPath = `polygon(50% 50%, 100% 0, 100% 100%)`;
+                segmentEl.style.transform = `rotate(${index * segmentAngle}deg)`;
+                segmentEl.style.position = "absolute";
+                segmentEl.style.width = "100%";
+                segmentEl.style.height = "100%";
+                
+                // Create label
+                const textEl = document.createElement('span');
+                textEl.textContent = segment.label;
+                textEl.style.position = "absolute";
+                textEl.style.left = "50%";
+                textEl.style.top = "20%";
+                textEl.style.transform = `translate(-50%, -50%) rotate(${segmentAngle / 2}deg)`;
+                textEl.style.color = "#fff";
+                textEl.style.fontSize = "14px";
+                textEl.style.fontWeight = "bold";
+                textEl.style.whiteSpace = "nowrap";
+                
+                segmentEl.appendChild(textEl);
+                wheel.appendChild(segmentEl);
+            });
+            
+            spinButton.addEventListener('click', function() {
+                spinButton.disabled = true;
+                winnerDisplay.style.opacity = 0;
+                winnerDisplay.style.transform = "scale(0.8)";
+                
+                const spinCount = 2 + Math.random() * 3;
+                const extraRotation = Math.random() * 360;
+                const totalRotation = spinCount * 360 + extraRotation;
+                currentRotation += totalRotation;
+                
+                wheel.style.transform = `rotate(${currentRotation}deg)`;
+                
+                setTimeout(() => {
+                    const normalizedRotation = (360 - (currentRotation % 360)) % 360;
+                    const winningIndex = Math.floor(normalizedRotation / segmentAngle);
+                    const winner = segments[winningIndex].label;
+                    
+                    setTimeout(() => {
+                        winnerDisplay.textContent = `Winner: ${winner}!`;
+                        winnerDisplay.style.opacity = 1;
+                        winnerDisplay.style.transform = "scale(1)";
+                        spinButton.disabled = false;
+                    }, 300);
+                }, 3000);
+            });
+        });
+    </script>
+</body>
+</html>
